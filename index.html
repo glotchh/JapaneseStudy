@@ -228,7 +228,7 @@
             color: #334155;
         }
 
-        /* Input / Game adjustments */
+        /* Game view inputs */
         .game-input-container {
             margin-bottom: 1.5rem;
         }
@@ -246,14 +246,6 @@
 
         .game-input-container input:focus {
             border-color: var(--primary);
-        }
-
-        /* IME Indicator HUD */
-        .ime-hint {
-            text-align: center;
-            font-size: 0.8rem;
-            color: var(--text-sub);
-            margin-top: 0.35rem;
         }
 
         .feedback-msg {
@@ -328,8 +320,7 @@
         </div>
 
         <div class="game-input-container">
-            <input type="text" id="game-input" placeholder="Type answer in Japanese Kana or Romaji..." autocomplete="off">
-            <div class="ime-hint">✨ Automatic IME Active: typing converts Romaji to Hiragana dynamically!</div>
+            <input type="text" id="game-input" placeholder="Type answer in Japanese or Romaji..." autocomplete="off">
         </div>
 
         <div id="game-feedback" class="feedback-msg"></div>
@@ -362,7 +353,7 @@ let gameDeck = [];
 let gameCurrentItem = null;
 let gameAwaitingNext = false;
 
-// New Function: Fetch external data file dynamically
+// Fetch external data file dynamically
 async function loadAppData() {
     try {
         const response = await fetch('./phrases.json');
@@ -374,9 +365,7 @@ async function loadAppData() {
         dictionary = data.dictionary;
         rawPhrases = data.rawPhrases;
         
-        // Data successfully structured, now spawn the UI layout
         initMenu();
-        // Bind the WanaKana IME layer to our input element
         initImeEngine();
     } catch (error) {
         console.error("Failed to load application phrases database:", error);
@@ -391,7 +380,6 @@ async function loadAppData() {
 function initImeEngine() {
     const inputElement = document.getElementById('game-input');
     if (inputElement && window.wanakana) {
-        // Automatically turns input fields into native Romaji -> Kana converters
         window.wanakana.bind(inputElement, { IMEMode: true });
     }
 }
@@ -421,7 +409,6 @@ function initMenu() {
     updateActionButtons();
 }
 
-// Page setup execution updated to call the network loader instead
 document.addEventListener("DOMContentLoaded", () => {
     loadAppData();
 });
@@ -643,7 +630,6 @@ function checkGameAnswer() {
     const cleanUser = rawUserVal.replace(/\s+/g, '').toLowerCase();
     const cleanTargetJap = gameCurrentItem.j.replace(/\s+/g, '');
     
-    // Check match against target Japanese string or raw target Romaji configuration string
     const isCorrect = (cleanUser === cleanTargetJap) || 
                       (rawUserVal.toLowerCase() === gameCurrentItem.r.toLowerCase());
                       
@@ -652,7 +638,7 @@ function checkGameAnswer() {
         feedbackEl.className = "feedback-msg correct";
         gameDeck.shift();
     } else {
-        feedbackEl.innerText = `残念(ざんねん)！ Incorrect. Correct Answer: ${cleanTargetJap}`;
+        feedbackEl.innerText = `残念(ざんねn)！ Incorrect. Correct Answer: ${cleanTargetJap}`;
         feedbackEl.className = "feedback-msg wrong";
         
         const failedCard = gameDeck.shift();
