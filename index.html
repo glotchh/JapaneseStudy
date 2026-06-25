@@ -278,12 +278,12 @@
         <div class="phrase-list-container" id="phrase-list">
         </div>
 
-        <div class="action-bar">
-            <div></div>
-            <div class="action-bar-right">
-                <button id="btn-start-learn" class="btn-secondary" onclick="startMode('learn')" disabled>Learn Mode</button>
-                <button id="btn-start-game" class="btn-success" onclick="startMode('game')" disabled>Play Flashcard Game</button>
-            </div>
+    <div class="action-bar">
+        <button class="btn-outline" onclick="changeView('menu')">&larr; Main Menu</button>
+        <div class="action-bar-right">
+            <button id="btn-toggle-breakdown" class="btn-secondary" onclick="toggleBreakdown()">Show Breakdown</button>
+            <button id="btn-prev-learn" class="btn-outline" onclick="prevLearnPhrase()">&larr; Prev Phrase</button> 
+            <button onclick="nextLearnPhrase()">Next Phrase &rarr;</button>
         </div>
     </div>
 
