@@ -1,345 +1,14 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Japanese Master - Learn & Quiz</title>
-    <script src="https://unpkg.com/wanakana"></script>
-    <style>
-        :root {
-            --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
-            --card-bg: #ffffff;
-            --primary: #dc2626;
-            --primary-hover: #b91c1c;
-            --secondary: #475569;
-            --secondary-hover: #334155;
-            --success: #10b981;
-            --success-hover: #059669;
-            --danger: #ef4444;
-            --text-main: #0f172a;
-            --text-sub: #64748b;
-            --border-color: #e2e8f0;
-            --radius-lg: 16px;
-            --radius-md: 10px;
-            --shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.08);
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        body {
-            background: var(--bg-gradient);
-            color: var(--text-main);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 2rem 1rem;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 800px;
-            background: var(--card-bg);
-            border-radius: var(--radius-lg);
-            padding: 2rem;
-            box-shadow: var(--shadow);
-        }
-
-        header {
-            text-align: center;
-            margin-bottom: 2rem;
-            border-bottom: 2px solid var(--border-color);
-            padding-bottom: 1.5rem;
-        }
-
-        h1 {
-            color: var(--primary);
-            font-size: 2.2rem;
-            margin-bottom: 0.5rem;
-        }
-
-        p.subtitle {
-            color: var(--text-sub);
-            font-size: 1rem;
-        }
-
-        .view {
-            display: none;
-        }
-
-        .view.active {
-            display: block;
-        }
-
-        /* Menu View Styles */
-        .menu-controls {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-            flex-wrap: wrap;
-        }
-
-        button {
-            padding: 0.75rem 1.5rem;
-            border: none;
-            border-radius: var(--radius-md);
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-primary:hover:not(:disabled) { background: var(--primary-hover); }
-        .btn-secondary { background: var(--secondary); color: white; }
-        .btn-secondary:hover:not(:disabled) { background: var(--secondary-hover); }
-        .btn-success { background: var(--success); color: white; }
-        .btn-success:hover:not(:disabled) { background: var(--success-hover); }
-
-        .selector-box {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            background: #f1f5f9;
-            padding: 0.5rem 1rem;
-            border-radius: var(--radius-md);
-        }
-
-        .selector-box input {
-            width: 60px;
-            padding: 0.35rem;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            text-align: center;
-            font-size: 1rem;
-        }
-
-        .phrase-list {
-            max-height: 400px;
-            overflow-y: auto;
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-md);
-            margin-bottom: 1.5rem;
-        }
-
-        .phrase-row {
-            display: flex;
-            align-items: center;
-            padding: 1rem;
-            border-bottom: 1px solid var(--border-color);
-            cursor: pointer;
-            transition: background 0.2s;
-        }
-
-        .phrase-row:last-child { border-bottom: none; }
-        .phrase-row:hover { background: #f8fafc; }
-        .phrase-row.selected { background: #fef2f2; }
-
-        .phrase-row input[type="checkbox"] {
-            margin-right: 1rem;
-            transform: scale(1.2);
-            accent-color: var(--primary);
-        }
-
-        .phrase-row-text {
-            display: flex;
-            flex-direction: column;
-            gap: 0.25rem;
-        }
-
-        .p-eng { font-weight: 600; color: var(--text-main); }
-        .p-japanese { color: var(--text-sub); font-size: 0.95rem; }
-
-        .action-bar {
-            display: flex;
-            gap: 1rem;
-            justify-content: flex-end;
-        }
-
-        /* Core Study View Styles */
-        .card {
-            background: #f8fafc;
-            border: 2px solid var(--border-color);
-            border-radius: var(--radius-lg);
-            padding: 2.5rem 2rem;
-            text-align: center;
-            margin-bottom: 1.5rem;
-            position: relative;
-        }
-
-        .progress-text {
-            position: absolute;
-            top: 1rem;
-            right: 1rem;
-            font-size: 0.85rem;
-            color: var(--text-sub);
-            font-weight: 600;
-        }
-
-        .display-english {
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin-bottom: 1rem;
-            color: var(--text-main);
-        }
-
-        .display-japanese {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--primary);
-            margin-bottom: 1rem;
-        }
-
-        .breakdown-box {
-            margin-top: 1.5rem;
-            padding-top: 1.5rem;
-            border-top: 1px solid var(--border-color);
-            text-align: left;
-            display: none;
-        }
-
-        .breakdown-title {
-            font-weight: 700;
-            margin-bottom: 0.75rem;
-            color: var(--secondary);
-        }
-
-        .words-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-        }
-
-        .word-tag {
-            background: #e2e8f0;
-            padding: 0.5rem 0.75rem;
-            border-radius: 8px;
-            font-size: 0.9rem;
-            color: #334155;
-        }
-
-        /* Game view inputs */
-        .game-input-container {
-            margin-bottom: 1.5rem;
-        }
-
-        .game-input-container input {
-            width: 100%;
-            padding: 1rem;
-            font-size: 1.25rem;
-            border: 2px solid var(--border-color);
-            border-radius: var(--radius-md);
-            text-align: center;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-
-        .game-input-container input:focus {
-            border-color: var(--primary);
-        }
-
-        .feedback-msg {
-            font-size: 1.2rem;
-            font-weight: 700;
-            margin-bottom: 1.5rem;
-            min-height: 1.8rem;
-        }
-
-        .feedback-msg.correct { color: var(--success); }
-        .feedback-msg.wrong { color: var(--danger); }
-
-        .victory-screen {
-            text-align: center;
-            padding: 2rem;
-        }
-
-        .victory-icon {
-            font-size: 4rem;
-            margin-bottom: 1rem;
-        }
-    </style>
-</head>
-<body>
-
-<div class="container">
-    <header>
-        <h1 id="app-title">Japanese Studio</h1>
-        <p class="subtitle" id="app-subtitle">Select phrases to begin learning</p>
-    </header>
-
-    <div id="view-menu" class="view active">
-        <div class="menu-controls">
-            <button class="btn-secondary" onclick="selectAll(true)">Select All</button>
-            <button class="btn-secondary" onclick="selectAll(false)">Clear Selections</button>
-            <div class="selector-box">
-                <label for="top-count-input">Select First:</label>
-                <input type="number" id="top-count-input" value="10" min="0" onkeydown="handleSelectorKey(event)">
-            </div>
-        </div>
-
-        <div class="phrase-list" id="phrase-list">
-            </div>
-
-        <div class="action-bar">
-            <button id="btn-start-learn" class="btn-success" disabled onclick="startMode('learn')">Learn Mode</button>
-            <button id="btn-start-game" class="btn-primary" disabled onclick="startMode('game')">Play Flashcard Game</button>
-        </div>
-    </div>
-
-    <div id="view-learn" class="view">
-        <div class="card">
-            <div class="progress-text" id="learn-progress">Phrase 0 of 0</div>
-            <div class="display-english" id="learn-english">---</div>
-            <div class="display-japanese" id="learn-japanese">---</div>
-            
-            <div class="breakdown-box" id="learn-breakdown">
-                <div class="breakdown-title">Sentence Breakdown</div>
-                <div class="words-grid" id="learn-words-grid"></div>
-            </div>
-        </div>
-        <div class="action-bar">
-            <button id="btn-toggle-breakdown" class="btn-secondary" onclick="toggleBreakdown()">Show Breakdown</button>
-            <button class="btn-primary" onclick="nextLearnPhrase()">Next / Continue</button>
-        </div>
-    </div>
-
-    <div id="view-game" class="view">
-        <div class="card">
-            <div class="progress-text" id="game-progress">Remaining Cards: 0</div>
-            <div class="display-english" id="game-english">---</div>
-        </div>
-
-        <div class="game-input-container">
-            <input type="text" id="game-input" placeholder="Type answer in Japanese or Romaji..." autocomplete="off">
-        </div>
-
-        <div id="game-feedback" class="feedback-msg"></div>
-
-        <div class="action-bar">
-            <button class="btn-secondary" onclick="changeView('menu')">Quit Game</button>
-            <button id="btn-submit-answer" class="btn-primary" onclick="checkGameAnswer()">Submit Answer</button>
-        </div>
-    </div>
-
-    <div id="view-victory" class="view victory-screen">
-        <div class="victory-icon">🎉</div>
-        <h2 style="margin-bottom: 1rem;">Deck Cleared!</h2>
-        <p style="color: var(--text-sub); margin-bottom: 2rem;">You successfully reviewed all selected cards.</p>
-        <button class="btn-primary" onclick="changeView('menu')">Return to Menu</button>
-    </div>
-</div>
-
 <script>
+// Dynamically load WanaKana library for IME functionality
+(function loadWanaKana() {
+    const script = document.createElement('script');
+    script.src = 'https://unpkg.com/wanakana';
+    script.onload = () => {
+        console.log('WanaKana IME successfully loaded.');
+    };
+    document.head.appendChild(script);
+})();
+
 // App Global States
 let dictionary = {};
 let rawPhrases = [];
@@ -353,9 +22,10 @@ let gameDeck = [];
 let gameCurrentItem = null;
 let gameAwaitingNext = false;
 
-// Fetch external data file dynamically
+// New Function: Fetch external data file dynamically
 async function loadAppData() {
     try {
+        // Fetches 'phrases.json' relative to your site location
         const response = await fetch('./phrases.json');
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -367,22 +37,12 @@ async function loadAppData() {
         
         // Data successfully structured, now spawn the UI layout
         initMenu();
-        // Bind the WanaKana IME layer to our input element
-        initImeEngine();
     } catch (error) {
         console.error("Failed to load application phrases database:", error);
         document.getElementById('phrase-list').innerHTML = `
             <div style="padding: 20px; color: var(--danger); text-align: center; font-weight: bold;">
                 Error: Unable to load vocabulary records. Please check configurations.
             </div>`;
-    }
-}
-
-// Bind WanaKana onto our text input field
-function initImeEngine() {
-    const inputElement = document.getElementById('game-input');
-    if (inputElement && window.wanakana) {
-        window.wanakana.bind(inputElement, { IMEMode: true });
     }
 }
 
@@ -411,6 +71,7 @@ function initMenu() {
     updateActionButtons();
 }
 
+// Page setup execution updated to call the network loader instead
 document.addEventListener("DOMContentLoaded", () => {
     loadAppData();
 });
@@ -504,6 +165,8 @@ function shuffle(array) {
     return array;
 }
 
+// ... rest of the code remains exactly identical ...
+
 function changeView(viewName) {
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     
@@ -544,8 +207,16 @@ function startMode(mode) {
         gameDeck = [...dynamicActivePool];
         gameAwaitingNext = false;
         document.getElementById('btn-submit-answer').innerText = "Submit Answer";
-        document.getElementById('game-input').readOnly = false;
-        document.getElementById('game-input').value = "";
+        
+        const inputEl = document.getElementById('game-input');
+        inputEl.readOnly = false;
+        inputEl.value = "";
+        
+        // Setup WanaKana IME binding seamlessly
+        if (window.wanakana) {
+            wanakana.bind(inputEl, { IMEMode: true });
+        }
+
         document.getElementById('game-feedback').className = "feedback-msg";
         document.getElementById('game-feedback').innerText = "";
         nextGameCard();
@@ -632,8 +303,10 @@ function checkGameAnswer() {
     const cleanUser = rawUserVal.replace(/\s+/g, '').toLowerCase();
     const cleanTargetJap = gameCurrentItem.j.replace(/\s+/g, '');
     
+    // Note: Since IME transforms text, checking against raw Romaji entry still fallback validates via gameCurrentItem.r
     const isCorrect = (cleanUser === cleanTargetJap) || 
-                      (rawUserVal.toLowerCase() === gameCurrentItem.r.toLowerCase());
+                      (rawUserVal.toLowerCase() === gameCurrentItem.r.toLowerCase()) ||
+                      (window.wanakana && wanakana.toRomaji(rawUserVal).toLowerCase() === gameCurrentItem.r.toLowerCase());
                       
     if (isCorrect) {
         feedbackEl.innerText = "正解(せいかい)！ Correct!";
@@ -658,5 +331,3 @@ document.getElementById('game-input').addEventListener('keydown', function(e) {
     }
 });
 </script>
-</body>
-</html>
