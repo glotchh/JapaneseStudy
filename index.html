@@ -239,7 +239,7 @@
         }
         .txt-input:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.1); }
         .txt-input[readonly] { background-color: #f1f5f9; color: #64748b; cursor: default; }
-        
+         
         .ime-hint { text-align: center; font-size: 12px; color: var(--text-sub); margin-bottom: 15px; font-weight: 500;}
 
         .feedback-msg { font-size: 15px; font-weight: 600; margin-bottom: 20px; min-height: 22px; text-align: center; }
@@ -274,7 +274,7 @@
             <button class="btn-outline" onclick="selectAll(false)">Unselect All</button>
             <input type="number" id="num-selector" class="num-selector-input" placeholder="Select top N..." min="1" onkeydown="handleSelectorKey(event)">
         </div>
-        
+         
         <div class="phrase-list-container" id="phrase-list">
         </div>
 
@@ -289,11 +289,11 @@
 
     <div id="view-learn" class="view">
         <div class="progress-indicator" id="learn-progress">Phrase 1 of 10</div>
-        
+         
         <div class="display-card">
             <div class="big-phrase" id="learn-english">Good morning</div>
             <div class="sub-phrase" id="learn-japanese">おはようございます</div>
-            
+             
             <div id="learn-breakdown" class="breakdown-box" style="display: none;">
                 <div class="breakdown-lbl">Word Breakdown</div>
                 <div class="words-grid" id="learn-words-grid"></div>
@@ -373,10 +373,10 @@ async function loadAppData() {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data = await response.json();
-        
+         
         dictionary = data.dictionary;
         rawPhrases = data.rawPhrases;
-        
+         
         // Data successfully structured, now spawn the UI layout
         initMenu();
     } catch (error) {
@@ -392,7 +392,7 @@ async function loadAppData() {
 function initMenu() {
     const listContainer = document.getElementById('phrase-list');
     listContainer.innerHTML = '';
-    
+     
     rawPhrases.forEach((phrase, index) => {
         const row = document.createElement('div');
         row.className = 'phrase-row';
@@ -421,7 +421,7 @@ document.addEventListener("DOMContentLoaded", () => {
 function toggleSelectRow(index) {
     const checkbox = document.getElementById(`check-${index}`);
     const row = document.getElementById(`phrase-row-${index}`);
-    
+     
     if (selectedIndices.has(index)) {
         selectedIndices.delete(index);
         checkbox.checked = false;
@@ -452,14 +452,14 @@ function selectAll(shouldSelectAll) {
 
 function selectTopN(count) {
     selectedIndices.clear();
-    
+     
     if (count < 1) count = 0;
     if (count > rawPhrases.length) count = rawPhrases.length;
 
     rawPhrases.forEach((_, index) => {
         const checkbox = document.getElementById(`check-${index}`);
         const row = document.getElementById(`phrase-row-${index}`);
-        
+         
         if (index < count) {
             selectedIndices.add(index);
             checkbox.checked = true;
@@ -485,7 +485,7 @@ function updateActionButtons() {
     const count = selectedIndices.size;
     const learnBtn = document.getElementById('btn-start-learn');
     const gameBtn = document.getElementById('btn-start-game');
-    
+     
     if (count > 0) {
         learnBtn.disabled = false;
         gameBtn.disabled = false;
@@ -507,11 +507,9 @@ function shuffle(array) {
     return array;
 }
 
-// ... rest of the code remains exactly identical ...
-
 function changeView(viewName) {
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-    
+     
     const title = document.getElementById('app-title');
     const subtitle = document.getElementById('app-subtitle');
 
@@ -549,11 +547,11 @@ function startMode(mode) {
         gameDeck = [...dynamicActivePool];
         gameAwaitingNext = false;
         document.getElementById('btn-submit-answer').innerText = "Submit Answer";
-        
+         
         const inputEl = document.getElementById('game-input');
         inputEl.readOnly = false;
         inputEl.value = "";
-        
+         
         // Setup WanaKana IME binding seamlessly
         if (window.wanakana) {
             wanakana.bind(inputEl, { IMEMode: true });
@@ -569,21 +567,37 @@ function startMode(mode) {
 function showLearnPhrase() {
     const item = dynamicActivePool[currentLearnIndex];
     document.getElementById('learn-progress').innerText = `Phrase ${currentLearnIndex + 1} of ${dynamicActivePool.length}`;
-    
+     
     document.getElementById('learn-english').innerText = item.e;
     document.getElementById('learn-japanese').innerText = `${item.j.replace(/\s+/g, '')} (${item.r})`;
-    
+     
     const grid = document.getElementById('learn-words-grid');
     grid.innerHTML = '';
-    
+     
+    // Clean and capture potential components
     const cleaned = item.j.replace(/[?.!,...。、？]/g, '').split(/\s+/);
     const uniqueWords = [...new Set(cleaned)].filter(w => w.trim() !== "");
 
     uniqueWords.forEach(word => {
-        const meaning = dictionary[word] || "meaning parsing";
+        let entry = dictionary[word];
+        let meaningText = "meaning parsing";
+
+        // Fallback matching logic for compound entries or sub-elements in database
+        if (!entry) {
+            const dictionaryKeys = Object.keys(dictionary);
+            const foundKey = dictionaryKeys.find(k => word.includes(k) || k.includes(word));
+            if (foundKey) {
+                entry = dictionary[foundKey];
+            }
+        }
+
+        if (entry && entry.meaning) {
+            meaningText = `${entry.meaning} (${entry.type || 'vocabulary'})`;
+        }
+
         const tag = document.createElement('div');
         tag.className = 'word-tag';
-        tag.innerHTML = `<strong>${word}</strong>: ${meaning}`;
+        tag.innerHTML = `<strong>${word}</strong>: ${meaningText}`;
         grid.appendChild(tag);
     });
 }
@@ -615,16 +629,16 @@ function nextGameCard() {
         changeView('victory');
         return;
     }
-    
+     
     gameCurrentItem = gameDeck[0];
     document.getElementById('game-progress').innerText = `Remaining Cards: ${gameDeck.length}`;
     document.getElementById('game-english').innerText = gameCurrentItem.e;
-    
+     
     const inputEl = document.getElementById('game-input');
     inputEl.value = "";
     inputEl.readOnly = false;
     inputEl.focus();
-    
+     
     document.getElementById('game-feedback').innerText = "";
     document.getElementById('game-feedback').className = "feedback-msg";
     document.getElementById('btn-submit-answer').innerText = "Submit Answer";
@@ -635,21 +649,23 @@ function checkGameAnswer() {
     const inputEl = document.getElementById('game-input');
     const feedbackEl = document.getElementById('game-feedback');
     const submitBtn = document.getElementById('btn-submit-answer');
-    
+     
     if (gameAwaitingNext) {
         nextGameCard();
         return;
     }
-    
+     
     const rawUserVal = inputEl.value.trim();
     const cleanUser = rawUserVal.replace(/\s+/g, '').toLowerCase();
     const cleanTargetJap = gameCurrentItem.j.replace(/\s+/g, '');
-    
-    // Note: Since IME transforms text, checking against raw Romaji entry still fallback validates via gameCurrentItem.r
+     
+    // Verification checking matching raw input strings, Romaji counterparts, or text variations
     const isCorrect = (cleanUser === cleanTargetJap) || 
+                      (rawUserVal.toLowerCase() === gameCurrentItem.r.replace(/\s+/g, '').toLowerCase()) ||
                       (rawUserVal.toLowerCase() === gameCurrentItem.r.toLowerCase()) ||
-                      (window.wanakana && wanakana.toRomaji(rawUserVal).toLowerCase() === gameCurrentItem.r.toLowerCase());
-                      
+                      (window.wanakana && wanakana.toRomaji(rawUserVal).toLowerCase() === gameCurrentItem.r.toLowerCase()) ||
+                      (window.wanakana && wanakana.toRomaji(rawUserVal).replace(/\s+/g, '').toLowerCase() === gameCurrentItem.r.replace(/\s+/g, '').toLowerCase());
+                       
     if (isCorrect) {
         feedbackEl.innerText = "正解(せいかい)！ Correct!";
         feedbackEl.className = "feedback-msg correct";
@@ -657,11 +673,11 @@ function checkGameAnswer() {
     } else {
         feedbackEl.innerText = `残念(ざんねん)！ Incorrect. Correct Answer: ${cleanTargetJap}`;
         feedbackEl.className = "feedback-msg wrong";
-        
+         
         const failedCard = gameDeck.shift();
         gameDeck.push(failedCard);
     }
-    
+     
     inputEl.readOnly = true;
     submitBtn.innerText = "Next Card";
     gameAwaitingNext = true;
