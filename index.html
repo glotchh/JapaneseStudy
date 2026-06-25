@@ -304,8 +304,8 @@
             <button class="btn-outline" onclick="changeView('menu')">&larr; Main Menu</button>
             <div class="action-bar-right">
                 <button id="btn-toggle-breakdown" class="btn-secondary" onclick="toggleBreakdown()">Show Breakdown</button>
-                <button id="btn-prev-learn" class="btn-outline" onclick="prevLearnPhrase()">&larr; Prev Phrase</button>
-                <button onclick="nextLearnPhrase()">Next Phrase &rarr;</button>
+                <button id="btn-prev-learn" onclick="prevLearnPhrase()">&larr; Prev Phrase</button>
+                <button id="btn-next-learn" onclick="nextLearnPhrase()">Next Phrase &rarr;</button>
             </div>
         </div>
     </div>
@@ -566,8 +566,9 @@ function showLearnPhrase() {
     const item = dynamicActivePool[currentLearnIndex];
     document.getElementById('learn-progress').innerText = `Phrase ${currentLearnIndex + 1} of ${dynamicActivePool.length}`;
     
-    // Toggle active state of the back button based on the deck pointer position
+    // Toggle gray disabled state for both boundaries
     document.getElementById('btn-prev-learn').disabled = (currentLearnIndex === 0);
+    document.getElementById('btn-next-learn').disabled = (currentLearnIndex === dynamicActivePool.length - 1);
      
     document.getElementById('learn-english').innerText = item.e;
     document.getElementById('learn-japanese').innerText = `${item.j.replace(/\s+/g, '')} (${item.r})`;
@@ -602,10 +603,8 @@ function showLearnPhrase() {
 }
 
 function nextLearnPhrase() {
-    currentLearnIndex++;
-    if (currentLearnIndex >= dynamicActivePool.length) {
-        changeView('menu');
-    } else {
+    if (currentLearnIndex < dynamicActivePool.length - 1) {
+        currentLearnIndex++;
         showLearnPhrase();
     }
 }
