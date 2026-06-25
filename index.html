@@ -365,7 +365,9 @@ async function loadAppData() {
         dictionary = data.dictionary;
         rawPhrases = data.rawPhrases;
         
+        // Data successfully structured, now spawn the UI layout
         initMenu();
+        // Bind the WanaKana IME layer to our input element
         initImeEngine();
     } catch (error) {
         console.error("Failed to load application phrases database:", error);
@@ -638,7 +640,7 @@ function checkGameAnswer() {
         feedbackEl.className = "feedback-msg correct";
         gameDeck.shift();
     } else {
-        feedbackEl.innerText = `残念(ざんねn)！ Incorrect. Correct Answer: ${cleanTargetJap}`;
+        feedbackEl.innerText = `残念(ざんねん)！ Incorrect. Correct Answer: ${cleanTargetJap}`;
         feedbackEl.className = "feedback-msg wrong";
         
         const failedCard = gameDeck.shift();
