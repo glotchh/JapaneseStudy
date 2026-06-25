@@ -1,3 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Japanese Master - Learn & Quiz</title>
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+            --card-bg: #ffffff;
+            --primary: #dc2626;
+            --primary-hover: #b91c1c;
+            --secondary: #475569;
+            --secondary-hover: #334155;
+            --success: #10b981;
+            --success-hover: #059669;
+            --danger: #ef4444;
+            --text-main: #0f172a;
+            --text-sub: #64748b;
+            --border-color: #e2e8f0;
+            --radius-lg: 16px;
+            --radius-md: 10px;
+            --shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 800px;
+            background: var(--card-bg);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+            padding: 30px;
+            min-height: 550px;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: var(--text-sub);
+            font-size: 15px;
+        }
+
+        /* Views management */
+        .view {
+            display: none;
+            flex-direction: column;
+            flex-grow: 1;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .view.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Buttons styles */
+        button, .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 15px;
+            font-weight: 600;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        button:hover { background: var(--primary-hover); transform: translateY(-1px); }
+        button:active { transform: translateY(0); }
+
+        .btn-secondary { background: var(--secondary); }
+        .btn-secondary:hover { background: var(--secondary-hover); }
+        .btn-success { background: var(--success); }
+        .btn-success:hover { background: var(--success-hover); }
+        .btn-outline { background: transparent; border: 2px solid var(--border-color); color: var(--secondary); }
+        .btn-outline:hover { background: #f8fafc; border-color: var(--text-sub); }
+
+        button:disabled { background: #cbd5e1 !important; color: #94a3b8 !important; cursor: not-allowed; transform: none; }
+
+        /* Phrase Selection List Grid */
+        .selection-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        /* Selector Textbox Styling */
+        .num-selector-input {
+            padding: 12px 16px;
+            font-size: 15px;
+            font-weight: 600;
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-md);
+            outline: none;
+            width: 140px;
+            transition: all 0.2s;
+            color: var(--text-main);
+        }
+        .num-selector-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+        }
+
+        .phrase-list-container {
+            max-height: 350px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            margin-bottom: 25px;
+            background: #f8fafc;
+        }
+
+        .phrase-row {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .phrase-row:last-child { border-bottom: none; }
+        .phrase-row:hover { background: #f1f5f9; }
+        .phrase-row.selected { background: #fef2f2; }
+
+        .phrase-row input[type="checkbox"] {
+            margin-right: 15px;
+            width: 18px;
+            height: 18px;
+            accent-color: var(--primary);
+            cursor: pointer;
+        }
+
+        .phrase-row-text {
+            display: flex;
+            flex-grow: 1;
+            justify-content: space-between;
+            gap: 15px;
+            font-size: 14.5px;
+        }
+
+        .p-eng { font-weight: 600; color: var(--text-main); }
+        .p-japanese { color: var(--text-sub); text-align: right; }
+
+        /* Learn View & Game View Display Panels */
+        .display-card {
+            background: #f8fafc;
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 40px 20px;
+            text-align: center;
+            margin-bottom: 25px;
+            position: relative;
+            min-height: 180px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .big-phrase { font-size: 32px; font-weight: 800; color: var(--text-main); margin-bottom: 12px; }
+        .sub-phrase { font-size: 18px; color: var(--text-sub); font-style: italic; }
+
+        .progress-indicator {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-sub);
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Breakdown dynamic elements */
+        .breakdown-box {
+            margin-top: 5px;
+            border-top: 1px dashed var(--border-color);
+            padding-top: 20px;
+            text-align: left;
+            width: 100%;
+        }
+        .breakdown-lbl { font-size: 12px; font-weight: 700; color: var(--text-sub); text-transform: uppercase; margin-bottom: 10px; }
+        .words-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+        .word-tag { background: white; border: 1px solid var(--border-color); padding: 6px 12px; border-radius: 8px; font-size: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .word-tag strong { color: var(--primary); }
+
+        /* Game Input Elements */
+        .input-wrapper { width: 100%; max-width: 500px; margin: 0 auto 5px auto; }
+        .txt-input {
+            width: 100%;
+            padding: 14px 20px;
+            font-size: 18px;
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-md);
+            outline: none;
+            transition: all 0.2s;
+            text-align: center;
+            font-weight: 600;
+        }
+        .txt-input:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.1); }
+        .txt-input[readonly] { background-color: #f1f5f9; color: #64748b; cursor: default; }
+        
+        .ime-hint { text-align: center; font-size: 12px; color: var(--text-sub); margin-bottom: 15px; font-weight: 500;}
+
+        .feedback-msg { font-size: 15px; font-weight: 600; margin-bottom: 20px; min-height: 22px; text-align: center; }
+        .feedback-msg.correct { color: var(--success); }
+        .feedback-msg.wrong { color: var(--danger); }
+
+        .action-bar { display: flex; gap: 15px; justify-content: space-between; margin-top: auto; }
+        .action-bar-right { display: flex; gap: 10px; }
+
+        /* Victory View Styling */
+        .victory-panel { text-align: center; padding: 40px 20px; margin-auto: auto; }
+        .victory-icon { font-size: 60px; margin-bottom: 15px; }
+
+        /* Scrollbar aesthetics */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <div class="header">
+        <h1 id="app-title">Japanese Studio</h1>
+        <p id="app-subtitle">Select phrases to begin learning</p>
+    </div>
+
+    <div id="view-menu" class="view active">
+        <div class="selection-controls">
+            <button class="btn-outline" onclick="selectAll(true)">Select All</button>
+            <button class="btn-outline" onclick="selectAll(false)">Unselect All</button>
+            <input type="number" id="num-selector" class="num-selector-input" placeholder="Select top N..." min="1" onkeydown="handleSelectorKey(event)">
+        </div>
+        
+        <div class="phrase-list-container" id="phrase-list">
+        </div>
+
+        <div class="action-bar">
+            <div></div>
+            <div class="action-bar-right">
+                <button id="btn-start-learn" class="btn-secondary" onclick="startMode('learn')" disabled>Learn Mode</button>
+                <button id="btn-start-game" class="btn-success" onclick="startMode('game')" disabled>Play Flashcard Game</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="view-learn" class="view">
+        <div class="progress-indicator" id="learn-progress">Phrase 1 of 10</div>
+        
+        <div class="display-card">
+            <div class="big-phrase" id="learn-english">Good morning</div>
+            <div class="sub-phrase" id="learn-japanese">おはようございます</div>
+            
+            <div id="learn-breakdown" class="breakdown-box" style="display: none;">
+                <div class="breakdown-lbl">Word Breakdown</div>
+                <div class="words-grid" id="learn-words-grid"></div>
+            </div>
+        </div>
+
+        <div class="action-bar">
+            <button class="btn-outline" onclick="changeView('menu')">&larr; Main Menu</button>
+            <div class="action-bar-right">
+                <button id="btn-toggle-breakdown" class="btn-secondary" onclick="toggleBreakdown()">Show Breakdown</button>
+                <button onclick="nextLearnPhrase()">Next Phrase &rarr;</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="view-game" class="view">
+        <div class="progress-indicator" id="game-progress">Remaining Cards: 10</div>
+
+        <div class="display-card">
+            <div class="sub-phrase" style="margin-bottom: 10px; font-style: normal; font-weight: 500; text-transform: uppercase; font-size: 12px; letter-spacing: 1px;">Translate into Japanese:</div>
+            <div class="big-phrase" id="game-english" style="font-size: 28px;">Good morning</div>
+        </div>
+
+        <div class="input-wrapper">
+            <input type="text" id="game-input" class="txt-input" placeholder="Type in Japanese or Romaji" autocomplete="off">
+        </div>
+        <div class="ime-hint">✨ Switch to your PC's native Japanese input to type answers directly!</div>
+
+        <div class="feedback-msg" id="game-feedback"></div>
+
+        <div class="action-bar">
+            <button class="btn-outline" onclick="changeView('menu')">&larr; Quit Game</button>
+            <button id="btn-submit-answer" onclick="checkGameAnswer()">Submit Answer</button>
+        </div>
+    </div>
+
+    <div id="view-victory" class="view">
+        <div class="victory-panel">
+            <div class="victory-icon">🎉</div>
+            <h2 style="font-size: 26px; font-weight: 800; color: var(--success); margin-bottom: 10px;">おめでとう！ (Congratulations)</h2>
+            <p style="color: var(--text-sub); margin-bottom: 30px; font-size: 16px;">You successfully cleared every selected card without hints!</p>
+            <button onclick="changeView('menu')">Return to Main Menu</button>
+        </div>
+    </div>
+</div>
+
 <script>
 // Dynamically load WanaKana library for IME functionality
 (function loadWanaKana() {
@@ -331,3 +673,5 @@ document.getElementById('game-input').addEventListener('keydown', function(e) {
     }
 });
 </script>
+</body>
+</html>
