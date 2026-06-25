@@ -278,12 +278,12 @@
         <div class="phrase-list-container" id="phrase-list">
         </div>
 
-    <div class="action-bar">
-        <button class="btn-outline" onclick="changeView('menu')">&larr; Main Menu</button>
-        <div class="action-bar-right">
-            <button id="btn-toggle-breakdown" class="btn-secondary" onclick="toggleBreakdown()">Show Breakdown</button>
-            <button id="btn-prev-learn" class="btn-outline" onclick="prevLearnPhrase()">&larr; Prev Phrase</button> 
-            <button onclick="nextLearnPhrase()">Next Phrase &rarr;</button>
+        <div class="action-bar">
+            <div></div>
+            <div class="action-bar-right">
+                <button id="btn-start-learn" class="btn-secondary" onclick="startMode('learn')" disabled>Learn Mode</button>
+                <button id="btn-start-game" class="btn-success" onclick="startMode('game')" disabled>Play Flashcard Game</button>
+            </div>
         </div>
     </div>
 
@@ -304,6 +304,7 @@
             <button class="btn-outline" onclick="changeView('menu')">&larr; Main Menu</button>
             <div class="action-bar-right">
                 <button id="btn-toggle-breakdown" class="btn-secondary" onclick="toggleBreakdown()">Show Breakdown</button>
+                <button id="btn-prev-learn" class="btn-outline" onclick="prevLearnPhrase()">&larr; Prev Phrase</button>
                 <button onclick="nextLearnPhrase()">Next Phrase &rarr;</button>
             </div>
         </div>
@@ -364,10 +365,9 @@ let gameDeck = [];
 let gameCurrentItem = null;
 let gameAwaitingNext = false;
 
-// New Function: Fetch external data file dynamically
+// Fetch external data file dynamically
 async function loadAppData() {
     try {
-        // Fetches 'phrases.json' relative to your site location
         const response = await fetch('./phrases.json');
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -377,7 +377,6 @@ async function loadAppData() {
         dictionary = data.dictionary;
         rawPhrases = data.rawPhrases;
          
-        // Data successfully structured, now spawn the UI layout
         initMenu();
     } catch (error) {
         console.error("Failed to load application phrases database:", error);
@@ -552,7 +551,6 @@ function startMode(mode) {
         inputEl.readOnly = false;
         inputEl.value = "";
          
-        // Setup WanaKana IME binding seamlessly
         if (window.wanakana) {
             wanakana.bind(inputEl, { IMEMode: true });
         }
@@ -567,6 +565,9 @@ function startMode(mode) {
 function showLearnPhrase() {
     const item = dynamicActivePool[currentLearnIndex];
     document.getElementById('learn-progress').innerText = `Phrase ${currentLearnIndex + 1} of ${dynamicActivePool.length}`;
+    
+    // Toggle active state of the back button based on the deck pointer position
+    document.getElementById('btn-prev-learn').disabled = (currentLearnIndex === 0);
      
     document.getElementById('learn-english').innerText = item.e;
     document.getElementById('learn-japanese').innerText = `${item.j.replace(/\s+/g, '')} (${item.r})`;
@@ -574,7 +575,6 @@ function showLearnPhrase() {
     const grid = document.getElementById('learn-words-grid');
     grid.innerHTML = '';
      
-    // Clean and capture potential components
     const cleaned = item.j.replace(/[?.!,...。、？]/g, '').split(/\s+/);
     const uniqueWords = [...new Set(cleaned)].filter(w => w.trim() !== "");
 
@@ -582,7 +582,6 @@ function showLearnPhrase() {
         let entry = dictionary[word];
         let meaningText = "meaning parsing";
 
-        // Fallback matching logic for compound entries or sub-elements in database
         if (!entry) {
             const dictionaryKeys = Object.keys(dictionary);
             const foundKey = dictionaryKeys.find(k => word.includes(k) || k.includes(word));
@@ -607,6 +606,13 @@ function nextLearnPhrase() {
     if (currentLearnIndex >= dynamicActivePool.length) {
         changeView('menu');
     } else {
+        showLearnPhrase();
+    }
+}
+
+function prevLearnPhrase() {
+    if (currentLearnIndex > 0) {
+        currentLearnIndex--;
         showLearnPhrase();
     }
 }
@@ -659,7 +665,6 @@ function checkGameAnswer() {
     const cleanUser = rawUserVal.replace(/\s+/g, '').toLowerCase();
     const cleanTargetJap = gameCurrentItem.j.replace(/\s+/g, '');
      
-    // Verification checking matching raw input strings, Romaji counterparts, or text variations
     const isCorrect = (cleanUser === cleanTargetJap) || 
                       (rawUserVal.toLowerCase() === gameCurrentItem.r.replace(/\s+/g, '').toLowerCase()) ||
                       (rawUserVal.toLowerCase() === gameCurrentItem.r.toLowerCase()) ||
